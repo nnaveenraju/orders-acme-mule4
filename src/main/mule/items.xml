@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+
+	<sub-flow name="items-get-subflow" doc:id="b2541771-fc08-46fc-bb38-0097a8a2bd3c" >
+		<logger level="INFO" message="get:\items:orders-api-config" />
+		<db:select doc:name="Select : demo.Items" doc:id="d8d3cfc0-f5b3-4b95-97aa-47e118dd5f29" config-ref="Database_Config">
+			<db:sql>select ItemID, ItemName, ItemCost from demo.Items;</db:sql>
+		
+</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="4915a42e-9eb2-477f-bcaa-762f980a3ec2">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	totalItems : sizeOf(payload),
+	items : payload map ((values, index) ->{
+		ItemID : values.ItemID, 
+		ItemName : values.ItemName, 
+		ItemCost : values.ItemCost
+	})
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="items-get-itemById-subflow" doc:id="413257ed-b7d6-42ec-84ba-31c42dcd4c6d" >
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="ec369af5-a9e2-4c39-b664-13e5ea0cc813">
+            <ee:variables>
+                <ee:set-variable variableName="itemid"><![CDATA[attributes.uriParams.itemid]]></ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+		<db:select doc:name="Select : Items: itemID" doc:id="36a4d20b-0b1e-4721-8802-e9dc7e56cee1" config-ref="Database_Config">
+			<db:sql>select ItemID, ItemName, ItemCost from demo.Items
+where ItemId = :itemId;</db:sql>
+			<db:input-parameters><![CDATA[#[{"itemId" : vars.itemid }]]]></db:input-parameters>
+		</db:select>
+		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="3aef3369-aaa5-44b9-b8af-619263d92d14">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((values, index) -> {
+  itemId: values.ItemID,
+  itemCost: values.ItemName,
+  itemName: values.ItemCost
+})]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+	</sub-flow>
+
+	
+	
+    
+
+
+
+</mule>

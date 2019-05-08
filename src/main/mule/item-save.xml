@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sqs="http://www.mulesoft.org/schema/mule/sqs"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/current/mule-sqs.xsd">
+	
+	<flow name="post-items">
+        
+        <flow-ref name="common-variables"  doc:name="common-variables" />
+        
+        <choice doc:name="Choice" doc:id="b270a67b-80fc-40d0-9937-174328a1be5b" >
+			<when expression='#[typeOf(payload) as String == "Object"]'>
+				<ee:transform doc:name="Transform Message" doc:id="de96400a-eca4-48ff-991b-2f2f9fef3d45">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+  itemId: payload.itemId,
+  itemCost: payload.itemCost,
+  itemName: payload.itemName
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</when>
+			<when expression='#[typeOf(payload) as String == "Array"]'>
+				<ee:transform doc:name="Transform Message" doc:id="5cb9d6ec-6dfb-4353-abc2-c5a56901985b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map ((values, index) -> {
+  itemId: values.itemId,
+  itemCost: values.itemCost,
+  itemName: values.itemName
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="233a4780-4986-4feb-9af7-072cba37c155" />
+				<set-payload value="#[[]]" doc:name="Set Payload" doc:id="2ab935cb-bbc4-46b5-857e-c74e74f4543a" />
+			</otherwise>
+		</choice>
+		<choice doc:name="Choice" doc:id="b8382a40-6fda-4bc3-8abf-2585110cf1bc" >
+			<when expression='#[typeOf(payload) as String == "Array"]'>
+				<flow-ref name="item-save-bulk-insert" doc:name="item-save-bulk-insert" />
+			</when>
+			<when expression='#[typeOf(payload) as String == "Object"]'>
+				<flow-ref name="item-save-insert" doc:name="item-save-insert"/>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="87cdee8c-2f04-4465-96db-5d9640bc773a" />
+				<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="735cdcde-71f3-4c10-9b36-85569b42ba61">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  status : "fail",
+  errorDesc: "Please send atleast 1 record to save.."
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+			</otherwise>
+		</choice>
+    
+</flow>
+	
+	<sub-flow name="item-save-insert" doc:id="127dbbb1-aab1-44e9-9b30-b0f2ae3471e9" >
+		
+		<try doc:name="Try" doc:id="1531f194-ac1d-4344-939d-c6e0f8d37cc3" >
+			<db:insert doc:name="Insert" doc:id="64bdd258-1504-4038-ae20-97a1670b45ff" config-ref="Database_Config" autoGenerateKeys="true">
+				<db:sql>Insert into Items (ItemName,ItemCost)
+values(:itemName, :itemCost);
+</db:sql>
+			<db:input-parameters><![CDATA[#[payload]]]></db:input-parameters>
+			<db:auto-generated-keys-column-names>
+				<db:auto-generated-keys-column-name value="ItemID" />
+			</db:auto-generated-keys-column-names>
+		</db:insert>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error propagate" doc:id="9944a324-1558-4777-a266-7af3648ddfee" >
+				<set-variable value="#[error]" doc:name="Set Variable" doc:id="d3e63a4b-5c57-4a5b-8b1b-bc2aa6fb3057" variableName="error" />
+					<flow-ref doc:name="secure-item-payload-on-failure" doc:id="f5064827-1023-4c23-8dd6-cbd62bfcd833" name="secure-item-payload-on-failure"/>
+			
+		</on-error-continue>
+		</error-handler>
+		</try>
+		<choice doc:name="Choice" doc:id="0368284e-5194-4e14-89ee-38bc5ab24d36" >
+			<when expression="#[vars.error == null]">
+				<ee:transform doc:name="Transform Message" doc:id="a4bd80f7-7991-4dca-8523-932d641e49e9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	success: true,
+	itemId : payload['generatedKeys']['GENERATED_KEY']
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="593e646f-cf75-42ae-a896-4fffcb121d03" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	success: false,
+	errorDesc: vars.error.description,
+	failSafeData: {
+	 	sqsMessageId: payload.messageId,
+	 	correlationId: vars.correlationId
+	 	
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	
+	
+</sub-flow>
+	
+<sub-flow name="item-save-bulk-insert" doc:id="80b226b1-d545-463e-9186-05ac94bff9ca">
+	
+		<try doc:name="Try" doc:id="e8c15f23-fea0-4226-bc00-b2bc14ee02ce" >
+			<db:bulk-insert doc:name="Bulk insert" doc:id="3ca49b03-eeb9-4671-90f9-85c8fd73da72" config-ref="Database_Config">
+			<db:sql>Insert into Items (ItemName,ItemCost)
+values(:itemName, :itemCost);
+</db:sql>
+			</db:bulk-insert>
+			<error-handler>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="10e7d092-c487-40d0-addd-90d50e5cdd4d" type="ANY">
+					<flow-ref name="secure-item-payload-on-failure" doc:name="secure-item-payload-on-failure" target="secure-item-payload-on-failure" doc:id="962bff5b-72fe-44fa-8402-a10c3150be03" />
+					<set-variable value="#[error]" doc:name="Set Variable" doc:id="4ae519db-6294-4e99-9454-dca88a189d52" variableName="error"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<choice doc:name="Choice" doc:id="b9912712-b171-4bdc-a3fe-8938ac7f2a4a" >
+			<when expression="#[error == null]">
+				<ee:transform doc:name="Transform Message" doc:id="39b81804-e1df-4c7f-9423-354d0ae159d9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	success: true,
+	numberOfItemsSaved: sizeOf(payload)
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="d4fe2066-10cc-4d24-ad7f-e87fc7fa5168" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	success: false,
+	numberOfItemsSaved: sizeOf(payload)
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</otherwise>
+		</choice>
+	
+	
+</sub-flow>
+</mule>

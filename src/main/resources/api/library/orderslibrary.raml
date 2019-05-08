@@ -1,0 +1,74 @@
+#%RAML 1.0 Library
+usage: Data shapes for orders API
+
+types: 
+  order:
+    type: object
+    properties:
+      orderId?: number
+      customerName: 
+        type:   string
+        minLength: 3
+        required: true
+    example:
+      orderId: 1
+      customerName: "Naveen Raju"
+      
+  item:
+    type: object
+    properties:
+      itemId?: 
+        type: number        
+      itemName: 
+        type: string
+        minLength: 5
+      itemCost: 
+        type: number
+        minimum: 10
+        required: true
+    example:
+      itemId: 121
+      itemCost: 22.34
+      itemName: "iPhone Case"
+
+  orderItem:
+    type: object
+    properties:
+      orderId: number
+      orderItemId?: number 
+      itemCount:
+        type: number
+        minimum: 1
+        required: true
+      items: 
+        type:  item[]
+        required: true
+        minItems: 1
+  
+  upsertOrder:
+    type: object
+    properties:
+      orderId?: number
+      orderItemId?: number 
+      itemCount:
+        type: number
+        minimum: 1
+        required: true
+      items: 
+        type:  item[]
+        required: true
+        minItems: 1
+
+  orders:
+    type: order[]
+
+  orderDetails:
+    type: order
+    properties:
+      orderItems: 
+        type: orderItem[]
+        minItems: 1
+        required: true
+  
+  items:
+    type: item[]

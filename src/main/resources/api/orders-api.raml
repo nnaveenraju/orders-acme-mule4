@@ -1,0 +1,83 @@
+#%RAML 1.0
+title: Orders API for partners
+
+baseUri: https://orders-acme.us-e2.cloudhub.io
+protocols: [ HTTPS ]
+version: v1
+mediaType: [ application/json ]
+
+documentation:
+  - title: Home
+    content: |
+      This API is designed for partners who may access to get the customer's orders
+  
+  - title: API Specs
+    content: |
+      Please read through the API structure for details..
+
+traits:
+  secured: !include traits/securetoken.raml
+  sortable: !include traits/sortable.raml
+
+securitySchemes:
+  oauth_2_0: !include security/securityScheme.raml
+  
+
+uses:
+  orders: ./library/orderslibrary.raml
+
+    
+/orders:
+  is: [secured, sortable]
+  securedBy: [ oauth_2_0 ]
+  description: |
+    API to get the orders by customer
+  get:
+    responses:
+      200:
+        body:
+          type: orders.orders
+  post:
+    body:
+      type: orders.upsertOrder
+    responses:
+      201:
+        body:
+          type: orders.orderDetails
+
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            type: orders.orderDetails
+
+/items:
+  is: [secured, sortable]
+  securedBy: [ oauth_2_0 ]
+  description: |
+    API to get the items
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            type: orders.items
+  
+  post:
+    body:
+      type: orders.item
+    responses:
+      201:
+        body:
+          type: orders.item
+
+  /{itemid}:
+    description: |
+      API to get the item details
+    get:
+      responses:
+        200:
+          body:
+            type: orders.item
+  

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sns="http://www.mulesoft.org/schema/mule/sns" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sqs="http://www.mulesoft.org/schema/mule/sqs" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/current/mule-sqs.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/sns http://www.mulesoft.org/schema/mule/sns/current/mule-sns.xsd">
+	<os:object-store name="Object_store" doc:name="Object store" doc:id="b64304d0-0636-429e-af62-31bc6245e0e5" />
+	
+	<flow name="DLQ-to-DBFlow1" doc:id="ce840590-c157-4ef3-a593-b968b6363740" >
+		<scheduler doc:name="Scheduler" doc:id="c7fe716f-7534-47e6-ac1f-79b2eeeeeee4" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="2" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<os:retrieve doc:name="Retrieve" doc:id="83c1178e-a317-43cc-9831-0b5b0202c19d" key="dqlcount" objectStore="Object_store">
+			<os:default-value ><![CDATA[#[1]]]></os:default-value>
+		</os:retrieve>
+		<sns:publish doc:name="Publish" doc:id="3b9bbc60-bf4c-420c-bbbe-0ad92b6dc3be" config-ref="Amazon_SNS_configuration" topicArn="arn:aws:sns:us-east-2:267705711664:Items-DLQ" subject="#['There are '  ++ (payload as String) ++ ' number of failed Items, Please check the DB for details']" messageStructure="Items failed"/>
+	</flow>
+	<flow name="DLQ-to-DBFlow" doc:id="50da1982-ddeb-4b80-b816-183effc95b2d" >
+		<sqs:receivemessages doc:name="Receivemessages" doc:id="7de08d2b-95b9-4cad-88df-14c00fae6990" config-ref="Amazon_SQS_Configuration" queueUrl="https://sqs.us-east-2.amazonaws.com/267705711664/items-dlq" numberOfMessages="10" preserveMessages="true"/>
+		<ee:transform doc:name="Transform Message" doc:id="00653540-6f0c-44ac-b101-b4cb5bbbf453" >
+			<ee:variables >
+				<ee:set-variable variableName="deleteMessageSQS" ><![CDATA[%dw 2.0
+output application/java
+---
+p("secure::items.sqs.dlq.Q")
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-variable variableName="eerrr" value='#[p("secure::items.sqs.dlq.Q")]' />
+		<flow-ref name="SQSMessageAttributes" doc:name="SQSMessageAttributes" />
+		<ee:transform doc:name="Transform Message" doc:id="5253b87a-178d-4104-972b-2e46412314c4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	ObjectType : 'Items',
+	Body : write(payload,'application/json'),
+	CorrelationId : attributes['correlationId'].stringValue,
+	SQSMessageId : attributes['sqs.message.id'],
+	ErrorDesc : attributes['errorDesc'].stringValue
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="06e1bc05-06fb-477a-92e6-bf0fb41cc73b" message="#[payload]"/>
+		<db:insert doc:name="Insert" doc:id="a370e9a0-cbb4-43a8-9ece-2334dbde525c" config-ref="Database_Config">
+			<db:sql >insert into DLQ ( ObjectType, Body, CorrelationId,SQSMessageId, ErrorDesc)
+values (:ObjectType, :Body,:CorrelationId, :SQSMessageId, :ErrorDesc)</db:sql>
+			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="d3a55c00-b946-415e-a40c-1302ac33cb51" message="#[payload]"/>
+		<flow-ref name="DeleteSQSMessage-Using-MessageHandler"  doc:name="DeleteSQSMessage-Using-MessageHandler" />
+		<os:retrieve doc:name="Retrieve" doc:id="d696f5e2-87ca-4392-8bab-768c0dc383be" key="dqlcount" objectStore="Object_store" target="dlqItemCount">
+			<os:default-value ><![CDATA[#[0]]]></os:default-value>
+		</os:retrieve>
+		<set-variable value="#[vars.dlqItemCount + 1]" doc:name="Set Variable" doc:id="6dd6e0d6-e5f4-4a9a-a372-4e5fcaafe6d6" variableName="dlqItemCount"/>
+		<os:store doc:name="Store" doc:id="8246a3e3-2087-4772-9530-e239f03b08b9" key="dqlcount" objectStore="Object_store" failOnNullValue="false">
+			<os:value ><![CDATA[#[vars.dlqItemCount]]]></os:value>
+		</os:store>
+	</flow>
+</mule>

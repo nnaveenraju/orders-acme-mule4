@@ -1,0 +1,15 @@
+#%RAML 1.0 Trait
+
+
+queryParameters:
+  sortby:
+    description: Field that has to sorted on
+    type: string
+    required: false
+  
+  orderby:
+    description: Order the sort by ascending or descending
+    type: string
+    required: false
+    default: desc
+    enum: [desc, asc]

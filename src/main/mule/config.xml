@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sqs="http://www.mulesoft.org/schema/mule/sqs"
+	xmlns:sns="http://www.mulesoft.org/schema/mule/sns"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/sns http://www.mulesoft.org/schema/mule/sns/current/mule-sns.xsd
+http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/current/mule-sqs.xsd">
+	
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="3b126b88-3542-4e89-9556-c5f294cb0c90" >
+		<db:my-sql-connection host="${secure::mysql.host}" port="${secure::mysql.port}" user="${secure::mysql.user}" 
+				password="${secure::mysql.password}" database="demo" />
+	</db:config>
+	
+	<global-property value="dev" name="env" />
+	<global-property value="" name="secureKey" />
+	
+	
+	<secure-properties:config key="${secureKey}" file="./properties/app-${env}.properties" name="secure-properties">
+		    <secure-properties:encrypt algorithm="Blowfish"/>
+	</secure-properties:config>
+
+	<configuration-properties file="./properties/userdetails.properties" />
+	
+    
+    <api-gateway:autodiscovery apiId="15696819" doc:name="API Autodiscovery" doc:id="45ee8182-0f4b-4808-875f-14246be8f98d" flowRef="orders-api-main" />
+	
+	<sns:config name="Amazon_SNS_configuration" doc:name="Amazon SNS configuration" doc:id="5e5a9e22-42e4-4a31-9988-5b3a18fabfc5" defaultTopicArn="arn:aws:sns:us-east-2:267705711664" >
+		<sns:basic-connection accessKey="${secure::sqs.accessKey}" secretKey="${secure::sqs.secretKey}" region="US_EAST_2" />
+	</sns:config>
+	
+	<sqs:config name="Amazon_SQS_Configuration" doc:name="Amazon SQS Configuration" doc:id="df1da24d-2b14-4494-92fc-40a48e81811a" defaultQueueUrl="https://sqs.us-east-2.amazonaws.com/267705711664">
+		<sqs:basic-connection accessKey="${secure::sqs.accessKey}" secretKey="${secure::sqs.secretKey}" region="US_EAST_2" />
+	</sqs:config>
+	
+</mule>
