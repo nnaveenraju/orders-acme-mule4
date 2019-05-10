@@ -1,0 +1,24 @@
+
+anypoint:
+  platform:
+    analytics_base_uri: "![LQ3ZF+Z9Ts9WVlYGf3XhRir7aingKaEoZ1CSPDHu7O2FDQFIdymyDSlIoKkfQ+wn]"
+    client_id: "![3QlKEz9xdYgDDCmOi7YR8yp6xlu+BNtpK3Q0b8e+G1Igf8j681Z3Rw==]"
+    client_secret: "![YrjmGkNwAna3kKE9Wppqk/0ZkXAafhyfLSxMIGwGvSsFqk5VqTqbIA==]"
+    base_uri: "![LQ3ZF+Z9Ts8/N24/9NY/rSfULHpSCiKF5Xrm6mJaYN0=]"
+
+
+items:
+  sqs:
+    dlq.Q: "![LQ3ZF+Z9Ts/5+a1CkeaPs7lk9o6dDCNNnIx8LK1g/f+aFerrtnPDSAqp47BALn5B9b1QVBbYVEVfK0emy+kIug==]"
+    failsafe.Q: "![LQ3ZF+Z9Ts/5+a1CkeaPs7lk9o6dDCNNnIx8LK1g/f+aFerrtnPDSAqp47BALn5B5CZsU2/KGaLehR22nDRwr/iAGNnXBxfV]"
+
+mysql:
+  host: "![px8JzpPEtDGqlYYPzbt0KWodn5XlJhfJRL/XNTdzAceQqcvni0gayvUJ23rDE9m9x+1Lkt/j/Qs=]"
+  port: "![hrzrtzxCT30=]"
+  user: "![kKwESjPvCv0=]"
+  password: "![6IJfjTvDLMZUYc1PSNqt2A==]"
+
+sqs:
+  accessKey: "![Oyo2k2s8lez2WBZEfqVny5uJ82Zh50C/]"
+  secretKey: "![+0JwqeoIjkiMg9tKmCx2SxU55sypjOrEnvg1eYRgwu+IVD7RyIOy807QK7KXvzjL]"
+  global.queue: "https://sqs.us-east-2.amazonaws.com/267705711664"

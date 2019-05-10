@@ -24,15 +24,15 @@ read(payload)
 			</ee:message>
 		</ee:transform>
 		<flow-ref name="SQSMessageAttributes" doc:name="SQSMessageAttributes" />
-		<set-variable variableName="deleteMessageSQS" value='#[p("secure::items.sqs.failsafe.Q")]' />
-		<flow-ref doc:name="Flow Reference" doc:id="619230b2-4720-4693-9d38-1a2d55c33f1e" name="post-items"/>
+		<set-variable variableName="deleteMessageSQS" value='#[p("secure::items.sqs.failsafe.Q")]' doc:name="Set Variable : deleteMessageSQS"/>
+		<flow-ref doc:name="Flow Reference : post-items" doc:id="619230b2-4720-4693-9d38-1a2d55c33f1e" name="post-items"/>
 		<logger level="INFO" doc:name="Logger" doc:id="a7925370-8135-4c1d-975b-4190cdb6d321" />
 		<choice doc:name="Choice" doc:id="4d600072-0720-4616-b0e2-983eb060ffc4" >
 			<when expression="#[payload.success == true]">
 				<flow-ref doc:name="DeleteSQSMessage-Using-MessageHandler" name="DeleteSQSMessage-Using-MessageHandler"  />
 			</when>
 			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="741f0198-ffe1-45f4-adba-2307c93bf3cc" />
+				<logger level="INFO" doc:name="Logger" doc:id="741f0198-ffe1-45f4-adba-2307c93bf3cc" message="Process not successful.. not deleting the message.."/>
 			</otherwise>
 		</choice>
 	</flow>
