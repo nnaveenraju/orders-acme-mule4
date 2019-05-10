@@ -9,6 +9,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 
 
+	<ee:object-store-caching-strategy name="Caching_Strategy" doc:name="Caching Strategy" doc:id="88a15912-8284-41bd-bdac-3553ebaa3820" objectStore="Object_store" keyGenerationExpression="#[vars.itemId]"/>
 	<sub-flow name="items-get-subflow" doc:id="b2541771-fc08-46fc-bb38-0097a8a2bd3c" >
 		<logger level="INFO" message="get:\items:orders-api-config" />
 		<db:select doc:name="Select : demo.Items" doc:id="d8d3cfc0-f5b3-4b95-97aa-47e118dd5f29" config-ref="Database_Config">
@@ -35,15 +36,17 @@ output application/json
 	<sub-flow name="items-get-itemById-subflow" doc:id="413257ed-b7d6-42ec-84ba-31c42dcd4c6d" >
 		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" doc:id="ec369af5-a9e2-4c39-b664-13e5ea0cc813">
             <ee:variables>
-                <ee:set-variable variableName="itemid"><![CDATA[attributes.uriParams.itemid]]></ee:set-variable>
+                <ee:set-variable variableName="itemId"><![CDATA[attributes.uriParams.itemid]]></ee:set-variable>
             </ee:variables>
         </ee:transform>
-		<db:select doc:name="Select : Items: itemID" doc:id="36a4d20b-0b1e-4721-8802-e9dc7e56cee1" config-ref="Database_Config">
+         
+		<ee:cache doc:name="Cache" doc:id="d180e33e-8a29-4156-9dca-cc2a4b3a75aa" cachingStrategy-ref="Caching_Strategy">
+			<db:select doc:name="Select : Items: itemID" doc:id="36a4d20b-0b1e-4721-8802-e9dc7e56cee1" config-ref="Database_Config">
 			<db:sql>select ItemID, ItemName, ItemCost from demo.Items
 where ItemId = :itemId;</db:sql>
-			<db:input-parameters><![CDATA[#[{"itemId" : vars.itemid }]]]></db:input-parameters>
+			<db:input-parameters><![CDATA[#[{"itemId" : vars.itemId }]]]></db:input-parameters>
 		</db:select>
-		<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="3aef3369-aaa5-44b9-b8af-619263d92d14">
+			<ee:transform xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd" doc:id="3aef3369-aaa5-44b9-b8af-619263d92d14">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -55,6 +58,7 @@ payload map ((values, index) -> {
 })]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		</ee:cache>
 	</sub-flow>
 
 	

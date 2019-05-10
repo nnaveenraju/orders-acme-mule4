@@ -139,8 +139,8 @@ values(:itemName, :itemCost);
 			</db:bulk-insert>
 			<error-handler>
 				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="10e7d092-c487-40d0-addd-90d50e5cdd4d" type="ANY">
+					<set-variable value="#[error]" doc:name="Set Variable" doc:id="4ae519db-6294-4e99-9454-dca88a189d52" variableName="error" />
 					<flow-ref name="secure-item-payload-on-failure" doc:name="secure-item-payload-on-failure" target="secure-item-payload-on-failure" doc:id="962bff5b-72fe-44fa-8402-a10c3150be03" />
-					<set-variable value="#[error]" doc:name="Set Variable" doc:id="4ae519db-6294-4e99-9454-dca88a189d52" variableName="error"/>
 				</on-error-continue>
 			</error-handler>
 		</try>

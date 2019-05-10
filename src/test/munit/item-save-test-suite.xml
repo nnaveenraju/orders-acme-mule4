@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:munit="http://www.mulesoft.org/schema/mule/munit"
+	xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	<munit:config name="item-save-test-suite.xml" />
+	<munit:test name="item-save-test-suite-post-itemsTest" description="Test" doc:id="0c16d6fc-8a8f-4d6d-83ef-cff428a3ee1c" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="ffdd2d81-7594-47fa-8f1a-256d01aae0a2" processor="db:insert">
+				<munit-tools:then-return  >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('items-save.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="c4010787-76d1-4551-8635-32cb68264781" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "itemCost": 9132.56,
+    "itemName": "iPhone5444g246346ethfghdfgn6546367ytwre4"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow-ref to post-items" doc:id="83cdd172-8126-40b3-9c47-1057b22fefa1" name="post-items"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call processor="mule:flow-ref" doc:name="Verify call" doc:id="24078bc9-ca97-4e01-b84e-f1d8b338eb69" times="3">
+			</munit-tools:verify-call>
+<!-- 			<munit-tools:assert-that expression='#[output application/json   write(payload, "application/json") as String]' is="#[output application/json  read(MunitTools::getResourceAsString('items-save.json','UTF-8') default &quot;&quot;,'application/json')]" doc:name="Assert payload" doc:id="1dde69a7-c496-44ed-95a7-f8519638348d" />
+ -->
+ 				<munit-tools:assert-that expression='#[output application/java --- payload.success as Boolean]' is="#[MunitTools::equalTo(true)]" doc:name="Assert payload" doc:id="5de658f6-b1c0-4f03-914a-c52c27812742" />
+ 		
+</munit:validation>
+	</munit:test>
+
+	
+	<munit:test name="item-save-test-suite-post-multiple-itemsTest" description="Test" doc:id="968fdd12-75cb-436b-bf21-c997035ccc5c" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="56785fd4-d918-4f49-aeaf-a6c6e0628ab0" processor="db:insert">
+				<munit-tools:then-return  >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('items-save.json')]" mediaType="application/json" encoding="UTF-8" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="c99c5a65-7c4d-4407-ae3b-5bbbab675dd6" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[{
+    "itemCost": 9132.56,
+    "itemName": "iPhone5444g246346ethfghdfgn6546367ytwre4"
+}]]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow-ref to post-items" doc:id="2a82b90f-e981-4c70-902d-9e593026467b" name="post-items"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call processor="mule:flow-ref" doc:name="Verify call" doc:id="28ceb04f-f50c-4883-a062-fdad9b094c8b" times="3">
+			</munit-tools:verify-call>
+<!-- 			<munit-tools:assert-that expression='#[output application/json   write(payload, "application/json") as String]' is="#[output application/json  read(MunitTools::getResourceAsString('items-save.json','UTF-8') default &quot;&quot;,'application/json')]" doc:name="Assert payload" doc:id="2f1eca01-9b9d-4aa0-83f5-fd352c1c9d37" />
+ -->
+ 				<munit-tools:assert-that expression='#[output application/java --- payload.success as Boolean]' is="#[MunitTools::equalTo(true)]" doc:name="Assert payload" doc:id="d9e2c197-d7c4-4614-8000-ac0a96a12c26" />
+ 		
+</munit:validation>
+	</munit:test>
+	
+	<munit:test name="item-save-test-suite-post-itemsTest-fail" description="Test" doc:id="3c17d336-dbcd-4cff-a7af-3953e1dbaa00" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="248d9d4a-db10-45ec-aa34-c0c59b64dcbb" processor="db:insert">
+				<munit-tools:then-return  >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('items-save-failed.json')]" mediaType="application/json" encoding="UTF-8"/>
+					<munit-tools:error typeId="#['HTTP:CONNECTIVITY']" />
+					<!-- <munit-tools:error typeId="#['HTTP:CONNECTIVITY']" cause="#[java!org::mule::runtime::api::connection::ConnectionException::new('MyMessage')]"/> -->
+					<!-- <munit-tools:variables >
+						<munit-tools:variable key="#[vars.error]" value="#['Failed from Mock']" />
+					</munit-tools:variables> -->
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock when" doc:id="817226eb-a156-4c7d-a15e-43ce169905d6" processor="sqs:send-message">
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('items-save-failed-sqs-push.json')]" mediaType="application/json" encoding="UTF-8"/>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		
+</munit:behavior>
+		<munit:execution >
+			<ee:transform doc:name="Transform Message" doc:id="902ee16f-f36a-4cf2-b57e-3a3661114b17" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    "itemCost": 913223423424242424242.56,
+    "itemName": "iPhone54423424242424244g246346ethfghdfgn6546367ytwre4"
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="error" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error: 'failed'
+}]]></ee:set-variable>
+				</ee:variables>
+			
+</ee:transform>
+			<flow-ref doc:name="Flow-ref to post-items" doc:id="4e1f0fdf-8272-4d9b-80c4-eceb42fa8972" name="post-items"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call processor="mule:flow-ref" doc:name="Verify call" doc:id="da143064-f91e-4416-b21e-7a66c5b3a5e8" times="4">
+			</munit-tools:verify-call>
+			<munit-tools:assert-that expression='#[output application/java --- payload.success as Boolean default false]' is="#[MunitTools::equalTo(false)]" doc:name="Assert payload" doc:id="5c253fe5-2593-4f22-9bf3-67e85661968f" />
+		</munit:validation>
+	</munit:test>
+	
+</mule>
