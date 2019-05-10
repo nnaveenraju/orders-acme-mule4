@@ -137,6 +137,7 @@ output application/json
     </flow>
     <flow name="get:\orders:orders-api-config">
         <logger level="INFO" message="get:\orders:orders-api-config" />
+		<flow-ref name="get-orders-db"  doc:name="Flow Reference : get-orders-db" doc:id="571d3dc2-cbe1-4e8a-b581-8b07f1b1f9da" />
     </flow>
     <flow name="get:\orders\(id):orders-api-config">
 		<logger level="INFO" message="get:\orders\(id):orders-api-config" />

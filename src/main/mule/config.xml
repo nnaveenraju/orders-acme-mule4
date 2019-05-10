@@ -21,8 +21,8 @@ http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/
 				password="${secure::mysql.password}" database="demo" />
 	</db:config>
 	
-	<global-property value="dev" name="env" />
-	<global-property value="" name="secureKey" />
+	<global-property value="${env}" name="env" />
+	<global-property value="${secureKey}" name="secureKey" />
 	
 	<secure-properties:config key="${secureKey}" file="./properties/app-${env}.properties" name="secure-properties">
 	<!-- <secure-properties:config key="${secureKey}" file="./properties/app-${env}.yaml" name="secure-properties"> -->
