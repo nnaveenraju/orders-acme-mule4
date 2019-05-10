@@ -124,7 +124,7 @@
 							<cloudHubDeployment>
 								<uri>https://anypoint.mulesoft.com</uri>
 								<muleVersion>${app.runtime}</muleVersion>
-								<server>modAnypoint</server>
+								<!-- <server>modAnypoint</server> -->
 								<username>${username}</username>
 								<password>${password}</password>
 								<applicationName>orders-acme</applicationName>
