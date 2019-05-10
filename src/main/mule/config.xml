@@ -22,7 +22,7 @@ http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/
 	</db:config>
 	
 	<global-property value="dev" name="env" />
-	<global-property value="MBoxDemo@123" name="secureKey" />
+	<global-property value="" name="secureKey" />
 	
 	<secure-properties:config key="${secureKey}" file="./properties/app-${env}.properties" name="secure-properties">
 	<!-- <secure-properties:config key="${secureKey}" file="./properties/app-${env}.yaml" name="secure-properties"> -->
