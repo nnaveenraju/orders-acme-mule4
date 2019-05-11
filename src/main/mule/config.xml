@@ -16,13 +16,14 @@ http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/sc
 http://www.mulesoft.org/schema/mule/sns http://www.mulesoft.org/schema/mule/sns/current/mule-sns.xsd
 http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/current/mule-sqs.xsd">
 	
+	<global-property value="${env}" name="env" />
+	<global-property value="" name="secureKey" />
+	
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="3b126b88-3542-4e89-9556-c5f294cb0c90" >
 		<db:my-sql-connection host="${secure::mysql.host}" port="${secure::mysql.port}" user="${secure::mysql.user}" 
 				password="${secure::mysql.password}" database="demo" />
 	</db:config>
 	
-	<global-property value="${env}" name="env" />
-	<global-property value="${secureKey}" name="secureKey" />
 	
 	<secure-properties:config key="${secureKey}" file="./properties/app-${env}.properties" name="secure-properties">
 	<!-- <secure-properties:config key="${secureKey}" file="./properties/app-${env}.yaml" name="secure-properties"> -->
