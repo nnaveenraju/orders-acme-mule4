@@ -158,16 +158,16 @@
 	
 	<dependencies>
 		<dependency>
-		    <groupId>com.mycompany</groupId>
-		    <artifactId>acme-common-lib</artifactId>
-		    <version>1.0.0-SNAPSHOT</version>
-		    <classifier>mule-plugin</classifier>
-		</dependency>
-		<dependency>
 		  <groupId>com.mulesoft.modules</groupId>
 		  <artifactId>mule-secure-configuration-property-module</artifactId>
 		  <version>1.0.2</version>
 		  <classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+		    <groupId>com.mycompany</groupId>
+		    <artifactId>acme-common-lib</artifactId>
+		    <version>1.0.0</version>
+		    <classifier>mule-plugin</classifier>
 		</dependency>
         <dependency>
             <groupId>org.mule.connectors</groupId>

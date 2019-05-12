@@ -1,1 +1,14 @@
-{"minMuleVersion":"4.1.5","secureProperties":["anypoint.platform.client_id","anypoint.platform.client_secret","secureKey"]}
+{
+	"minMuleVersion":"4.1.5",
+	"secureProperties":["anypoint.platform.client_id","anypoint.platform.client_secret","secureKey"],
+	"classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {
+      "exportedPackages": [],
+      "exportedResources": [
+        "log4j2.xml",
+        "main-app.xml"
+      ]
+    }
+  }
+}

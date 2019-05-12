@@ -21,7 +21,7 @@ http://www.mulesoft.org/schema/mule/ee/bti http://www.mulesoft.org/schema/mule/e
 	<global-property value="" name="secureKey" />
 	
 	<import doc:name="acme-common-lib" file="acme-common-lib.xml" />
-	<import doc:name="config" file="config.xml" />
+	
 	
 
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="3b126b88-3542-4e89-9556-c5f294cb0c90" >
@@ -54,6 +54,9 @@ http://www.mulesoft.org/schema/mule/ee/bti http://www.mulesoft.org/schema/mule/e
 		<sns:basic-connection accessKey="${secure::sqs.accessKey}" secretKey="${secure::sqs.secretKey}" region="US_EAST_2" />
 	</sns:config>
 	
+	<sqs:config name="Amazon_SQS_Configuration" doc:name="Amazon SQS Configuration" doc:id="d91f60f5-b9d3-4295-8f57-d99be0293b52" defaultQueueUrl="https://sqs.us-east-2.amazonaws.com/267705711664">
+		<sqs:basic-connection accessKey="${secure::sqs.accessKey}" secretKey="${secure::sqs.secretKey}" region="US_EAST_2" />
+	</sqs:config>
 	
 	<bti:transaction-manager doc:name="Bitronix Transaction Manager" doc:id="76301414-c745-4671-9ef5-502e54fdd0cb" doc:description="XA Transaction to maintain the trasactionality while saving orders as it has 2 tables to reach." />
 	
