@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd ">
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
     
     <http:listener-config name="orders-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8082" protocol="HTTPS">
@@ -14,11 +15,9 @@
     <flow name="orders-api-main">
         <http:listener config-ref="orders-api-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
             </http:response>
             <http:error-response statusCode="#[vars.httpStatus default 500]">
-                <http:body>#[payload]</http:body>
-                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+                <http:body><![CDATA[#[payload]]]></http:body>
             </http:error-response>
         </http:listener>
         <apikit:router config-ref="orders-api-config" />
@@ -136,11 +135,25 @@ output application/json
 		<flow-ref doc:name="items-get-subflow" doc:id="921114aa-1b8f-47ed-977e-01672e9a75f5" name="items-get-subflow"/>
     </flow>
     <flow name="get:\orders:orders-api-config">
-        <logger level="INFO" message="get:\orders:orders-api-config" />
+        <!-- <logger level="INFO" doc:name="Logger" doc:id="ac113b40-3320-404a-a1dc-bd2e04c68f01" message='#[%dw 2.0  import * from dw::core::Binaries  output application/java  (fromBase64((attributes.headers.authorization replace "Basic " with "")) splitBy(":"))[0] default ""]'/>
+		<logger level="INFO" doc:name="Logger" doc:id="dbabe2ac-c2b4-40df-b240-8cae2c98bec8" message='#[%dw 2.0  import * from dw::core::Binaries  output application/java   (fromBase64((attributes.headers.authorization replace "Basic " with "")) splitBy(":"))[1] default ""]'/>
+		 -->
+		 <logger level="INFO" message="get:\orders:orders-api-config" />
 		<flow-ref name="get-orders-db"  doc:name="Flow Reference : get-orders-db" doc:id="571d3dc2-cbe1-4e8a-b581-8b07f1b1f9da" />
     </flow>
     <flow name="get:\orders\(id):orders-api-config">
 		<logger level="INFO" message="get:\orders\(id):orders-api-config" />
+		<ee:transform doc:name="Transform Message" doc:id="83763f50-02ac-48a1-896d-72d3b8b79261" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	orderId : attributes.uriParams['id']
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="get-order-by-id" doc:id="1a512f62-1cbf-4133-955a-c1c5c7c48431" name="get-order-by-id"/>
     </flow>
     <flow name="get:\items\(itemid):orders-api-config">
         <flow-ref doc:name="items-get-itemById-subflow" doc:id="9391c510-fe7c-414f-a708-ae1dbcbf2b79" name="items-get-itemById-subflow" />
@@ -163,5 +176,6 @@ output application/json
     </flow>
     <flow name="post:\orders:application\json:orders-api-config">
         <logger level="INFO" message="post:\orders:application\json:orders-api-config" />
+        <flow-ref name="order-saveFlow" doc:name="order-saveFlow" />
     </flow>
 </mule>

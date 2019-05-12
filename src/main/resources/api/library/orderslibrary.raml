@@ -10,10 +10,13 @@ types:
         type:   string
         minLength: 3
         required: true
+      placementDate?:
+        type: datetime-only
     example:
       orderId: 1
       customerName: "Naveen Raju"
-      
+      placementDate: 2019-05-11T11:00:00
+
   item:
     type: object
     properties:
@@ -34,31 +37,16 @@ types:
   orderItem:
     type: object
     properties:
-      orderId: number
-      orderItemId?: number 
-      itemCount:
-        type: number
-        minimum: 1
-        required: true
-      items: 
-        type:  item[]
-        required: true
-        minItems: 1
-  
-  upsertOrder:
-    type: object
-    properties:
       orderId?: number
       orderItemId?: number 
       itemCount:
         type: number
         minimum: 1
         required: true
-      items: 
-        type:  item[]
+      itemId: 
+        type:  number
         required: true
-        minItems: 1
-
+  
   orders:
     type: order[]
 
@@ -72,3 +60,18 @@ types:
   
   items:
     type: item[]
+
+
+  upsertOrder:
+    type: order
+    properties:
+      orderId?: number
+      orderItemId?: number 
+      itemCount:
+        type: number
+        minimum: 1
+        required: true
+      items: 
+        type:  item[]
+        required: true
+        minItems: 1

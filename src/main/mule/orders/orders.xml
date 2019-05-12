@@ -5,6 +5,39 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="get-order-by-id" doc:id="9adcd8b4-04a8-4068-8bdf-0d53739912a0" >
+		<set-variable value="#[payload.orderId]" doc:name="Set Variable : orderId" doc:id="c44a0286-c142-48da-8258-eb15aabbf851" variableName="orderId"/>
+		<db:select doc:name="Select : Order Items" doc:id="3464e18a-e7cc-4972-a43b-67356a36237b" config-ref="Database_Config">
+			<db:sql >select o.OrderID, o.CustomerName, o.PlacementDate , oi.ItemCount, oi.ItemID, i.ItemName, i.ItemCost
+from 
+	Orders as o
+    join OrderItems as oi on o.OrderID = oi.OrderID
+    join Items as i on oi.ItemID = i.ItemID
+where o.OrderID = :orderId;
+</db:sql>
+			<db:input-parameters ><![CDATA[#[{'orderId' : vars.orderId}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="5e220d5b-78d0-4597-9420-cd414a13381b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	orderId: payload[0].OrderID,
+	customerName: payload[0].CustomerName,
+	placementDate: payload[0].PlacementDate,
+	orderItems : payload map ((v,i) -> {
+		itemId : v.ItemID,
+		itemCount: v.ItemCount,
+		itemName: v.ItemName,
+		itemCost: v.ItemCost
+	})
+}
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 	<flow name="get-orders-db" doc:id="87a5e7e4-bc4d-4ce9-b8d0-4e8594de4e70" >
 		<db:select doc:name="Select : Demo : Orders" doc:id="161b1db1-2c22-4970-87f0-fb5ed8b7171d" config-ref="Database_Config">
 			<db:sql >select OrderID, PlacementDate, CustomerName from Orders;
