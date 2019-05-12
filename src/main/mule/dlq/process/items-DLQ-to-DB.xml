@@ -17,9 +17,16 @@ http://www.mulesoft.org/schema/mule/sns http://www.mulesoft.org/schema/mule/sns/
 			</scheduling-strategy>
 		</scheduler>
 		<os:retrieve doc:name="Retrieve" doc:id="83c1178e-a317-43cc-9831-0b5b0202c19d" key="dqlcount" objectStore="Object_store">
-			<os:default-value ><![CDATA[#[1]]]></os:default-value>
+			<os:default-value ><![CDATA[#[0]]]></os:default-value>
 		</os:retrieve>
-		<sns:publish doc:name="Publish" doc:id="3b9bbc60-bf4c-420c-bbbe-0ad92b6dc3be" config-ref="Amazon_SNS_configuration" topicArn="arn:aws:sns:us-east-2:267705711664:Items-DLQ" subject="#['There are '  ++ (payload as String) ++ ' number of failed Items, Please check the DB for details']" messageStructure="Items failed"/>
+		<choice doc:name="Choice" doc:id="d1e4d055-54d2-404c-ab98-e6a03cfc44f1" >
+			<when expression="#[payload as Number &gt; 0]">
+				<sns:publish doc:name="Publish" doc:id="3b9bbc60-bf4c-420c-bbbe-0ad92b6dc3be" config-ref="Amazon_SNS_configuration" topicArn="arn:aws:sns:us-east-2:267705711664:Items-DLQ" subject="#['There are '  ++ (payload as String) ++ ' number of failed Items, Please check the DB for details']" messageStructure="Items failed" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="dc23e11e-4e65-47c1-84ca-0e7d4cb5fe5b" message="No data to publish...."/>
+			</otherwise>
+		</choice>
 	</flow>
 	<flow name="DLQ-to-DBFlow" doc:id="50da1982-ddeb-4b80-b816-183effc95b2d" >
 		<sqs:receivemessages doc:name="Receivemessages" doc:id="7de08d2b-95b9-4cad-88df-14c00fae6990" config-ref="Amazon_SQS_Configuration" queueUrl="https://sqs.us-east-2.amazonaws.com/267705711664/items-dlq" numberOfMessages="10" preserveMessages="true"/>
