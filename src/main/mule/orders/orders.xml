@@ -39,6 +39,7 @@ output application/json
 		</ee:transform>
 	</flow>
 	<flow name="get-orders-db" doc:id="87a5e7e4-bc4d-4ce9-b8d0-4e8594de4e70" >
+		<logger level="INFO" doc:name="Logger" doc:id="04176996-ce06-4a49-ab94-058372a4e49c" message="Demo Naveen to Paul"/>
 		<db:select doc:name="Select : Demo : Orders" doc:id="161b1db1-2c22-4970-87f0-fb5ed8b7171d" config-ref="Database_Config">
 			<db:sql >select OrderID, PlacementDate, CustomerName from Orders;
 </db:sql>
