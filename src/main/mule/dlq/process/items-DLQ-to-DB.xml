@@ -22,6 +22,9 @@ http://www.mulesoft.org/schema/mule/sns http://www.mulesoft.org/schema/mule/sns/
 		<choice doc:name="Choice" doc:id="d1e4d055-54d2-404c-ab98-e6a03cfc44f1" >
 			<when expression="#[payload as Number &gt; 0]">
 				<sns:publish doc:name="Publish" doc:id="3b9bbc60-bf4c-420c-bbbe-0ad92b6dc3be" config-ref="Amazon_SNS_configuration" topicArn="arn:aws:sns:us-east-2:267705711664:Items-DLQ" subject="#['There are '  ++ (payload as String) ++ ' number of failed Items, Please check the DB for details']" messageStructure="Items failed" />
+				<os:store doc:name="Store" doc:id="871db5c6-1138-43fb-9c64-e4c49152fa99" key="dqlcount" failOnNullValue="false">
+					<os:value ><![CDATA[#[0]]]></os:value>
+				</os:store>
 			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Logger" doc:id="dc23e11e-4e65-47c1-84ca-0e7d4cb5fe5b" message="No data to publish...."/>

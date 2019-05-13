@@ -15,12 +15,15 @@ http://www.mulesoft.org/schema/mule/sns http://www.mulesoft.org/schema/mule/sns/
 				<fixed-frequency frequency="2" timeUnit="MINUTES"/>
 			</scheduling-strategy>
 		</scheduler>
-		<os:retrieve doc:name="Retrieve" doc:id="83c1178e-a317-43cc-9831-0b5b0202c19d" key="dqlcount">
+		<os:retrieve doc:name="Retrieve" doc:id="83c1178e-a317-43cc-9831-0b5b0202c19d" key="dqlcountorders">
 			<os:default-value ><![CDATA[#[0]]]></os:default-value>
 		</os:retrieve>
 		<choice doc:name="Choice" doc:id="d1e4d055-54d2-404c-ab98-e6a03cfc44f1" >
 			<when expression="#[payload as Number &gt; 0]">
 				<sns:publish doc:name="Publish" doc:id="3b9bbc60-bf4c-420c-bbbe-0ad92b6dc3be" config-ref="Amazon_SNS_configuration" topicArn="arn:aws:sns:us-east-2:267705711664:orders-DLQ" subject="#['There are '  ++ (payload as String) ++ ' number of failed orders, Please check the DB for details']" messageStructure="orders failed" />
+				<os:store doc:name="Store" doc:id="f94780f0-2a00-44f7-9fd2-82b3d5ce7fd1" key="dqlcountorders" failOnNullValue="false">
+					<os:value ><![CDATA[#[0]]]></os:value>
+				</os:store>
 			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Logger" doc:id="dc23e11e-4e65-47c1-84ca-0e7d4cb5fe5b" message="No data to publish...."/>
@@ -61,11 +64,11 @@ values (:ObjectType, :Body,:CorrelationId, :SQSMessageId, :ErrorDesc)</db:sql>
 		</db:insert>
 		<logger level="INFO" doc:name="Logger" doc:id="d3a55c00-b946-415e-a40c-1302ac33cb51" message="#[payload]"/>
 		<flow-ref name="DeleteSQSMessage-Using-MessageHandler"  doc:name="DeleteSQSMessage-Using-MessageHandler" />
-		<os:retrieve doc:name="Retrieve" doc:id="d696f5e2-87ca-4392-8bab-768c0dc383be" key="dqlcount" target="dlqItemCount">
+		<os:retrieve doc:name="Retrieve" doc:id="d696f5e2-87ca-4392-8bab-768c0dc383be" key="dqlcountorders" target="dlqItemCount">
 			<os:default-value ><![CDATA[#[0]]]></os:default-value>
 		</os:retrieve>
 		<set-variable value="#[vars.dlqItemCount + 1]" doc:name="Set Variable" doc:id="6dd6e0d6-e5f4-4a9a-a372-4e5fcaafe6d6" variableName="dlqItemCount"/>
-		<os:store doc:name="Store" doc:id="8246a3e3-2087-4772-9530-e239f03b08b9" key="dqlcount" failOnNullValue="false">
+		<os:store doc:name="Store" doc:id="8246a3e3-2087-4772-9530-e239f03b08b9" key="dqlcountorders" failOnNullValue="false">
 			<os:value ><![CDATA[#[vars.dlqItemCount]]]></os:value>
 		</os:store>
 	</flow>
