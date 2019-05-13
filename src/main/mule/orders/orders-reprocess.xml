@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<flow name="orders-reprocessFlow" doc:id="588d02b3-7bbb-4c37-958f-2300a6b6ca81" >
 		<sqs:receivemessages doc:name="Receivemessages" doc:id="5b246dbb-7e67-4abb-81db-9a8baad7b30a" 
 			config-ref="Amazon_SQS_Configuration" visibilityTimeout="60" 
-			queueUrl="https://sqs.us-east-2.amazonaws.com/267705711664/items-fail-safe" 
+			queueUrl="https://sqs.us-east-2.amazonaws.com/267705711664/orders-fail-safe" 
 			primaryNodeOnly="true" preserveMessages="true">
 			<redelivery-policy />
 		</sqs:receivemessages>
