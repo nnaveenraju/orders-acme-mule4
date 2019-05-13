@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sqs="http://www.mulesoft.org/schema/mule/sqs"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/current/mule-sqs.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	
+	<flow name="orders-reprocessFlow" doc:id="588d02b3-7bbb-4c37-958f-2300a6b6ca81" >
+		<sqs:receivemessages doc:name="Receivemessages" doc:id="5b246dbb-7e67-4abb-81db-9a8baad7b30a" 
+			config-ref="Amazon_SQS_Configuration" visibilityTimeout="60" 
+			queueUrl="https://sqs.us-east-2.amazonaws.com/267705711664/items-fail-safe" 
+			primaryNodeOnly="true" preserveMessages="true">
+			<redelivery-policy />
+		</sqs:receivemessages>
+		<ee:transform doc:name="Transform Message" doc:id="da269f93-10f8-475d-b623-916951fa3fe5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+read(payload)
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref name="SQSMessageAttributes" doc:name="SQSMessageAttributes" />
+		<set-variable variableName="deleteMessageSQS" value='#[p("secure::orders.sqs.failsafe.Q")]' doc:name="Set Variable : deleteMessageSQS"/>
+		<flow-ref doc:name="Flow Reference : order-saveFlow" doc:id="619230b2-4720-4693-9d38-1a2d55c33f1e" name="order-saveFlow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="a7925370-8135-4c1d-975b-4190cdb6d321" message="#[message]"/>
+		<choice doc:name="Choice" doc:id="4d600072-0720-4616-b0e2-983eb060ffc4" >
+			<when expression="#[payload.success == true]">
+				<flow-ref doc:name="DeleteSQSMessage-Using-MessageHandler" name="DeleteSQSMessage-Using-MessageHandler"  />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Logger" doc:id="741f0198-ffe1-45f4-adba-2307c93bf3cc" message="Process not successful.. not deleting the message.."/>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

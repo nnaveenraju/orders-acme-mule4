@@ -27,19 +27,25 @@ orderItems: payload.orderItems map(( oiValues, oiIndex) ->
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="9df048c4-9349-40a4-ae10-a394e92664f0" variableName="incomingPayload"/>
 		<set-variable value="0" doc:name="Set Variable" doc:id="304ffb47-d032-44ec-b258-6022d3777494" variableName="newOrderId"/>
+		<set-variable value="null" doc:name="Set Variable" doc:id="1afe746a-21f5-4d90-879f-ed6a41b03fa3" variableName="error"/>
 		<try doc:name="Try" doc:id="b7e063d7-043d-4ef7-b77b-ffcbec32cbc4" transactionalAction="ALWAYS_BEGIN" transactionType="XA">
 			<flow-ref doc:name="save-order" doc:id="a63fd41b-c7f3-4a0d-b0a4-1dc71fb445f1" name="save-order"/>
 			<flow-ref name="save-orderitem" doc:name="save-orderitem" />
 			<error-handler >
-				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4289968e-b6d7-4818-8a81-199deb386376" >
-					<logger level="INFO" doc:name="Logger" doc:id="637a7521-11e3-4e58-953e-3371688d0cbc" message="#[error]"/>
-				</on-error-propagate>
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="bdbbdcc8-7464-4d10-8751-0b0e92eec864" >
+					<logger level="INFO" doc:name="Logger" doc:id="637a7521-11e3-4e58-953e-3371688d0cbc" message="#[error]" />
+					<set-variable value="#[error]" doc:name="Set Variable" doc:id="174d43ec-f23a-4b4e-b091-42e6a5199db2" variableName="error"/>
+					<flow-ref doc:name="secure-order-payload-on-failure" doc:id="c2f364ff-c95d-4d2b-917d-bdb83ce9753b" name="secure-order-payload-on-failure"/>
+				</on-error-continue>
 			</error-handler>
 		</try>
-		<ee:transform doc:name="Transform Message" doc:id="212a36f4-05a3-41c9-88a5-db390ef09182" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="b68d960d-a013-4204-8785-be02ebd34ba9" >
+			<when expression="#[error != null]">
+				<ee:transform doc:name="Transform Message" doc:id="212a36f4-05a3-41c9-88a5-db390ef09182">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -48,6 +54,28 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="149be178-45f1-43b7-ba58-37b2ed1e62ab" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	success: false,
+	errorDesc: vars.error.description,
+	failSafeData: {
+	 	sqsMessageId: payload.messageId,
+	 	correlationId: vars.correlationId
+	 	
+	},
+	payloadSent: write(vars.incomingPayload,'application/json')
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 		
 	</flow>
 	<flow name="save-order" doc:id="c34f1700-ccf3-4fdf-8901-582d2b39aa98" >

@@ -10,7 +10,8 @@ http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/
 	
 	<flow name="post-items">
         
-        <flow-ref name="common-variables"  doc:name="common-variables" />
+        <set-variable value="#[payload]" doc:name="Set Variable" doc:id="e74a3ad6-efef-484b-9f98-9c81a3d7a3e8" variableName="incomingPayload"/>
+		<flow-ref name="common-variables"  doc:name="common-variables" />
         
         <choice doc:name="Choice" doc:id="b270a67b-80fc-40d0-9937-174328a1be5b" >
 			<when expression='#[typeOf(payload) as String == "Object"]'>
@@ -101,7 +102,9 @@ output application/json
 ---
 {
 	success: true,
-	itemId : payload['generatedKeys']['GENERATED_KEY']
+	itemId : payload['generatedKeys']['GENERATED_KEY'],
+	item: write(vars.incomingPayload, 'application/json')
+//Mule::lookup("get-order-by-id", {'orderId' : vars.newOrderId})
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
@@ -119,7 +122,8 @@ output application/json
 	 	sqsMessageId: payload.messageId,
 	 	correlationId: vars.correlationId
 	 	
-	}
+	},
+	payloadSent: write(vars.incomingPayload, 'application/json')
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>

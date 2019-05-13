@@ -5,7 +5,7 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/sqs http://www.mulesoft.org/schema/mule/sqs/current/mule-sqs.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<flow name="secure-item-payload-on-failure" >
+	<flow name="secure-order-payload-on-failure" >
 		<ee:transform doc:name="Transform Message" doc:id="dd573703-5294-4595-bba4-4ae028d9b5ca" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -40,7 +40,7 @@ output application/java
 				<logger level="INFO" doc:name="Logger" doc:id="df0edf4a-be4d-441f-bdf9-514e219abdc4" message="Message in SQS.. not adding"/>
 			</when>
 			<otherwise >
-				<sqs:send-message doc:name="Send message" doc:id="dfb214bd-8e25-4b94-8c38-3a4264d38567" config-ref="Amazon_SQS_Configuration" queueUrl="https://sqs.us-east-2.amazonaws.com/267705711664/items-fail-safe">
+				<sqs:send-message doc:name="Send message" doc:id="dfb214bd-8e25-4b94-8c38-3a4264d38567" config-ref="Amazon_SQS_Configuration" queueUrl="https://sqs.us-east-2.amazonaws.com/267705711664/orders-fail-safe">
 		</sqs:send-message>
 			</otherwise>
 		</choice>
