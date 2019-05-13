@@ -8,6 +8,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
 	<flow name="order-saveFlow" doc:id="87e7513a-9cbd-47d5-913f-2a5b3571663a" >
 		<logger level="INFO" doc:name="Logger" doc:id="7f37988d-0266-4193-8343-8599c4a5ae6a" message="Save order details"/>
+		<flow-ref name="common-variables"  doc:name="common-variables" />
 		<ee:transform doc:name="Transform Message" doc:id="002e2290-bcb4-463f-9fc0-9f1157b53b2e" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
