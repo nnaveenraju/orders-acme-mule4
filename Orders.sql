@@ -1,0 +1,41 @@
+CREATE TABLE `DLQ` (
+  `DLQID` int(11) NOT NULL AUTO_INCREMENT,
+  `ObjectType` varchar(45) DEFAULT NULL,
+  `Body` text,
+  `CorrelationId` varchar(50) DEFAULT NULL,
+  `SQSMessageId` varchar(50) DEFAULT NULL,
+  `ErrorDesc` text,
+  `DateCreated` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`DLQID`)
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE `Items` (
+  `ItemID` int(11) NOT NULL AUTO_INCREMENT,
+  `ItemName` varchar(45) DEFAULT NULL,
+  `ItemCost` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`ItemID`)
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=latin1;
+
+
+
+CREATE TABLE `OrderItems` (
+  `OrderItemID` int(11) NOT NULL AUTO_INCREMENT,
+  `OrderID` int(11) DEFAULT NULL,
+  `ItemID` int(11) DEFAULT NULL,
+  `ItemCount` int(11) DEFAULT NULL,
+  PRIMARY KEY (`OrderItemID`),
+  KEY `OrderID_idx` (`OrderID`),
+  KEY `ItemID_idx` (`ItemID`),
+  CONSTRAINT `ItemID` FOREIGN KEY (`ItemID`) REFERENCES `Items` (`ItemID`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `OrderID` FOREIGN KEY (`OrderID`) REFERENCES `Orders` (`OrderID`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=77 DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE `Orders` (
+  `OrderID` int(11) NOT NULL AUTO_INCREMENT,
+  `PlacementDate` timestamp NULL DEFAULT NULL,
+  `CustomerName` varchar(120) DEFAULT NULL,
+  PRIMARY KEY (`OrderID`),
+  UNIQUE KEY `OrderID_UNIQUE` (`OrderID`)
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=latin1;
